@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Winged • Portfolio</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap');
+
+    :root {
+      --bg: #0a0a0f;
+      --card: rgba(19, 19, 31, 0.85);
+      --text: #e0e0ff;
+      --muted: #8a8ab8;
+      --accent: #7c5cff;
+      --accent-glow: rgba(124, 92, 255, 0.6);
+      --gold: #ffd700;
+      --gold-glow: rgba(255, 215, 0, 0.5);
+      --border: rgba(124, 92, 255, 0.3);
+      --neon-blue: #00d4ff;
+      --neon-pink: #ff00aa;
+      --neon-green: #00ff88;
+    }
+
+    [data-theme="light"] {
+      --bg: #e8e8f0;
+      --card: rgba(255, 255, 255, 0.9);
+      --text: #1a1a2e;
+      --muted: #5a5a7a;
+      --accent: #5a3fc9;
+      --accent-glow: rgba(90, 63, 201, 0.3);
+      --gold: #d4af37;
+      --gold-glow: rgba(212, 175, 55, 0.3);
+      --border: rgba(90, 63, 201, 0.2);
+      --neon-blue: #0088aa;
+      --neon-pink: #cc0088;
+      --neon-green: #00cc66;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Rajdhani', 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    #bgCanvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: -1;
+    }
+
+    .navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      background: rgba(10, 10, 15, 0.8);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      padding: 0.8rem 2rem;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+    [data-theme="light"] .navbar { background: rgba(255, 255, 255, 0.85); }
+
+    .nav-brand {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.6rem;
+      font-weight: 900;
+      background: linear-gradient(90deg, var(--accent), var(--gold), var(--neon-blue));
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: shimmer 3s linear infinite;
+    }
+    @keyframes shimmer { to { background-position: 200% center; } }
+
+    .nav-links { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+    .nav-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--muted);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .nav-btn::before {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 50%;
+      width: 0; height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--gold));
+      transition: all 0.3s;
+      transform: translateX(-50%);
+    }
+    .nav-btn:hover::before, .nav-btn.active::before { width: 80%; }
+    .nav-btn:hover { color: var(--text); }
+    .nav-btn.active { color: var(--gold); border-color: rgba(255, 215, 0, 0.2); }
+
+    .controls { display: flex; gap: 0.5rem; align-items: center; }
+    .icon-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 42px; height: 42px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1.3rem;
+      display: grid; place-items: center;
+      transition: all 0.3s;
+      backdrop-filter: blur(10px);
+      line-height: 1;
+    }
+    .icon-btn:hover {
+      transform: scale(1.1) rotate(10deg);
+      border-color: var(--gold);
+      box-shadow: 0 0 20px var(--gold-glow);
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 6rem 2rem 3rem;
+    }
+    .section {
+      display: none;
+      animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .section.active { display: block; }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(40px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    header { text-align: center; padding: 2rem 0; position: relative; }
+
+    .avatar-wrapper {
+      position: relative;
+      width: 180px; height: 180px;
+      margin: 0 auto 2rem;
+    }
+    .avatar-ring {
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      background: conic-gradient(var(--accent), var(--gold), var(--neon-blue), var(--neon-pink), var(--accent));
+      animation: spin 4s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .avatar-ring::after {
+      content: '';
+      position: absolute;
+      inset: 3px;
+      border-radius: 50%;
+      background: var(--bg);
+    }
+    .avatar {
+      position: relative;
+      width: 100%; height: 100%;
+      border-radius: 50%;
+      overflow: hidden;
+      z-index: 2;
+      border: 3px solid var(--bg);
+    }
+    .avatar img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    h1 {
+      font-family: 'Orbitron', monospace;
+      font-size: 3.5rem;
+      font-weight: 900;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--text) 0%, var(--gold) 50%, var(--neon-blue) 100%);
+      background-size: 300% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: shimmer 5s linear infinite;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-size: 1.2rem;
+      font-weight: 300;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 2.5rem;
+      margin: 2rem 0;
+      border: 1px solid var(--border);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      transition: transform 0.4s, box-shadow 0.4s;
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(124, 92, 255, 0.05), transparent);
+      transition: left 0.6s;
+    }
+    .card:hover::before { left: 100%; }
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 40px var(--accent-glow);
+      border-color: var(--accent);
+    }
+
+    .card h3 {
+      margin-bottom: 1.5rem;
+      font-family: 'Orbitron', monospace;
+      font-size: 1.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+    }
+    .card h3 .icon { font-size: 1.5rem; }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .about-item {
+      background: linear-gradient(135deg, rgba(124, 92, 255, 0.08), rgba(255, 215, 0, 0.03));
+      padding: 1.2rem;
+      border-radius: 12px;
+      border-left: 3px solid var(--accent);
+      border-top: 1px solid var(--border);
+      transition: all 0.3s;
+    }
+    .about-item:hover { border-left-color: var(--gold); transform: translateX(5px); }
+    .about-item .label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 0.3rem;
+    }
+    .about-item .value { font-weight: 700; font-size: 1.1rem; color: var(--text); }
+    .about-item .value.highlight { color: var(--gold); }
+    .about-item .value.fun { color: var(--neon-pink); font-style: italic; }
+
+    .skill { margin: 1.8rem 0; }
+    .skill-header {
+      display: flex; justify-content: space-between;
+      margin-bottom: 0.6rem;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    .skill-header .pct { font-family: 'Orbitron', monospace; color: var(--gold); }
+    .progress {
+      height: 14px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .progress-bar {
+      height: 100%;
+      border-radius: 10px;
+      background: linear-gradient(90deg, var(--accent), var(--neon-blue), var(--gold));
+      background-size: 200% auto;
+      animation: fillBar 1.5s ease forwards, shimmerBar 3s linear infinite;
+      position: relative;
+    }
+    .progress-bar::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+      animation: shineBar 2s infinite;
+    }
+    @keyframes fillBar { to { width: var(--val); } }
+    @keyframes shimmerBar { to { background-position: 200% center; } }
+    @keyframes shineBar {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(200%); }
+    }
+    .skill-desc { margin-top: 0.5rem; font-size: 0.85rem; color: var(--muted); }
+
+    .goals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    .goal-card {
+      background: linear-gradient(135deg, rgba(124, 92, 255, 0.12), rgba(255, 215, 0, 0.05));
+      padding: 1.8rem;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+    .goal-card:hover {
+      transform: translateY(-5px) scale(1.02);
+      border-color: var(--gold);
+      box-shadow: 0 15px 40px rgba(124, 92, 255, 0.2);
+    }
+    .goal-card .goal-icon { font-size: 2.5rem; margin-bottom: 0.8rem; display: block; }
+    .goal-card h4 {
+      font-family: 'Orbitron', monospace;
+      color: var(--gold);
+      margin-bottom: 0.8rem;
+      font-size: 1.1rem;
+    }
+    .goal-card p { color: var(--muted); font-size: 0.95rem; line-height: 1.6; }
+
+    .achievement {
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(124, 92, 255, 0.1));
+      padding: 2rem;
+      border-radius: 16px;
+      border: 2px solid var(--gold);
+      text-align: center;
+      margin-top: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .achievement .emoji { font-size: 3rem; margin-bottom: 0.5rem; position: relative; z-index: 1; }
+    .achievement .title {
+      font-family: 'Orbitron', monospace;
+      color: var(--gold);
+      font-size: 1.4rem;
+      font-weight: 700;
+      position: relative; z-index: 1;
+    }
+    .achievement .desc { color: var(--muted); margin-top: 0.5rem; position: relative; z-index: 1; }
+
+    .game-container {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 2.5rem;
+      text-align: center;
+      border: 1px solid var(--border);
+      backdrop-filter: blur(20px);
+    }
+    .game-container h3 {
+      font-family: 'Orbitron', monospace;
+      font-size: 1.8rem;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(90deg, var(--neon-green), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .game-style-selector {
+      margin-bottom: 1rem;
+      display: flex;
+      gap: 0.8rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .style-btn {
+      background: rgba(255,255,255,0.05);
+      border: 2px solid var(--border);
+      color: var(--text);
+      padding: 0.6rem 1.3rem;
+      border-radius: 12px;
+      cursor: pointer;
+      font-family: 'Orbitron', monospace;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: all 0.3s;
+    }
+    .style-btn:hover { border-color: var(--accent); transform: scale(1.05); }
+    .style-btn.active {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: rgba(255, 215, 0, 0.1);
+      box-shadow: 0 0 20px var(--gold-glow);
+    }
+
+    #gameCanvas {
+      border: 2px solid var(--accent);
+      border-radius: 12px;
+      margin: 1rem auto;
+      display: block;
+      max-width: 100%;
+    }
+    .game-info {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      margin-top: 1.5rem;
+      font-family: 'Orbitron', monospace;
+      font-size: 1.1rem;
+    }
+    .game-info span { color: var(--gold); }
+    .game-controls {
+      margin-top: 1.5rem;
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .game-btn {
+      background: linear-gradient(135deg, var(--accent), var(--neon-blue));
+      color: white;
+      border: none;
+      padding: 0.8rem 1.8rem;
+      border-radius: 10px;
+      cursor: pointer;
+      font-family: 'Orbitron', monospace;
+      font-weight: 600;
+      transition: all 0.3s;
+      font-size: 0.9rem;
+    }
+    .game-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 30px var(--accent-glow); }
+    .game-btn.secondary { background: transparent; border: 2px solid var(--accent); color: var(--accent); }
+    .game-btn.secondary:hover { background: var(--accent); color: white; }
+
+    .game-mobile-controls {
+      display: none;
+      margin-top: 1.5rem;
+    }
+    .ctrl-btn {
+      width: 60px; height: 60px;
+      background: rgba(124, 92, 255, 0.2);
+      border: 2px solid var(--accent);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 1.5rem;
+      cursor: pointer;
+      display: grid; place-items: center;
+      transition: all 0.2s;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .ctrl-btn:active { background: var(--accent); transform: scale(0.9); }
+    .ctrl-row { display: flex; justify-content: center; gap: 0.5rem; }
+
+    @media (max-width: 768px) {
+      .game-mobile-controls { display: grid; }
+    }
+
+    .contact-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.7rem;
+      background: linear-gradient(135deg, var(--accent), #5a3fc9);
+      color: white;
+      padding: 1rem 2.2rem;
+      border-radius: 14px;
+      text-decoration: none;
+      font-weight: 700;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.1rem;
+      margin: 0.5rem 0.4rem;
+      transition: all 0.3s;
+      border: 1px solid var(--accent);
+      position: relative;
+      overflow: hidden;
+    }
+    .contact-btn::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+    .contact-btn:hover::before { left: 100%; }
+    .contact-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 30px var(--accent-glow); }
+    .contact-btn.gold {
+      background: linear-gradient(135deg, var(--gold), #e6b800);
+      color: #0a0a0f;
+      border-color: var(--gold);
+    }
+    .contact-btn.gold:hover { box-shadow: 0 10px 30px var(--gold-glow); }
+
+    .info-box {
+      margin-top: 1.5rem;
+      padding: 1.2rem 1.5rem;
+      background: rgba(255, 215, 0, 0.08);
+      border: 1px solid rgba(255, 215, 0, 0.3);
+      border-radius: 12px;
+      font-size: 0.95rem;
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 2rem;
+    }
+    footer .brand { font-family: 'Orbitron', monospace; color: var(--accent); }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 2.2rem; }
+      .navbar { padding: 0.6rem 1rem; flex-wrap: wrap; }
+      .nav-links { gap: 0.2rem; }
+      .nav-btn { padding: 0.4rem 0.7rem; font-size: 0.8rem; }
+      .container { padding: 7rem 1rem 2rem; }
+      .avatar-wrapper { width: 130px; height: 130px; }
+      .card { padding: 1.5rem; }
+      .game-info { gap: 1.5rem; font-size: 0.95rem; }
+    }
+
+    @media (max-width: 480px) {
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="bgCanvas"></canvas>
+
+  <nav class="navbar">
+    <div class="nav-brand"> WINGED</div>
+    <div class="nav-links">
+      <button class="nav-btn active" onclick="showSection('home', this)" data-lang="nav_home">🏠 Главная</button>
+      <button class="nav-btn" onclick="showSection('about', this)" data-lang="nav_about">👤 Обо мне</button>
+      <button class="nav-btn" onclick="showSection('skills', this)" data-lang="nav_skills">💪 Навыки</button>
+      <button class="nav-btn" onclick="showSection('goals', this)" data-lang="nav_goals">🎯 Цели</button>
+      <button class="nav-btn" onclick="showSection('game', this)" data-lang="nav_game">🎮 Игра</button>
+      <button class="nav-btn" onclick="showSection('contact', this)" data-lang="nav_contact"> Контакты</button>
+    </div>
+    <div class="controls">
+      <button class="icon-btn" onclick="toggleLang()" title="Язык">🌐</button>
+      <button class="icon-btn" onclick="toggleTheme()" title="Тема">🌓</button>
+    </div>
+  </nav>
+
+  <div class="container">
+
+    <section id="home" class="section active">
+      <header>
+        <div class="avatar-wrapper">
+          <div class="avatar-ring"></div>
+          <div class="avatar">
+            <img src="ANDREY.jpg" alt="Winged" />
+          </div>
+        </div>
+        <h1>WINGED</h1>
+        <p class="subtitle" data-lang="subtitle">AI Developer • Web Creator • Digital Designer</p>
+      </header>
+
+      <div class="card">
+        <h3><span class="icon">👋</span> <span data-lang="welcome_title">Добро пожаловать!</span></h3>
+        <p style="color: var(--muted); font-size: 1.15rem; line-height: 1.9;" data-lang="welcome_text">
+          Меня зовут Андрей, мне 13 лет. Я из Приднестровья 🇵🇲<br>
+          Создаю крутые проекты с использованием ИИ и веб-технологий.<br>
+          Добро пожаловать в моё портфолио!
+        </p>
+      </div>
+    </section>
+
+    <section id="about" class="section">
+      <div class="card">
+        <h3><span class="icon">👤</span> <span data-lang="about_title">Обо мне</span></h3>
+        <div class="about-grid">
+          <div class="about-item">
+            <div class="label" data-lang="label_name">Имя</div>
+            <div class="value highlight">Андрей</div>
+          </div>
+          <div class="about-item">
+            <div class="label" data-lang="label_age">Возраст</div>
+            <div class="value">13 лет </div>
+          </div>
+          <div class="about-item">
+            <div class="label" data-lang="label_location">Локация</div>
+            <div class="value">🇲 Приднестровье</div>
+          </div>
+          <div class="about-item">
+            <div class="label" data-lang="label_school">Школа</div>
+            <div class="value">МОУ БСОШ • 7 класс</div>
+          </div>
+          <div class="about-item">
+            <div class="label" data-lang="label_study">Учёба</div>
+            <div class="value fun" data-lang="study_fun">«Когда как» 😄</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="skills" class="section">
+      <div class="card">
+        <h3><span class="icon">💪</span> <span data-lang="skills_title">Навыки</span></h3>
+        <div class="skill">
+          <div class="skill-header"><span>🤖 Искусственный интеллект</span><span class="pct">89%</span></div>
+          <div class="progress"><div class="progress-bar" style="--val: 89%"></div></div>
+          <p class="skill-desc" data-lang="skill_ai_desc">Нейросети, автоматизация, ChatGPT API, ML</p>
+        </div>
+        <div class="skill">
+          <div class="skill-header"><span>🌐 Веб-разработка</span><span class="pct">80%</span></div>
+          <div class="progress"><div class="progress-bar" style="--val: 80%"></div></div>
+          <p class="skill-desc" data-lang="skill_web_desc">HTML/CSS/JS, адаптивные сайты, API</p>
+        </div>
+        <div class="skill">
+          <div class="skill-header"><span>📱 Мобильная разработка</span><span class="pct">50%</span></div>
+          <div class="progress"><div class="progress-bar" style="--val: 50%"></div></div>
+          <p class="skill-desc" data-lang="skill_mobile_desc">React Native, Flutter, кроссплатформа</p>
+        </div>
+        <div class="skill">
+          <div class="skill-header"><span> UI/UX Дизайн</span><span class="pct">20%</span></div>
+          <div class="progress"><div class="progress-bar" style="--val: 20%"></div></div>
+          <p class="skill-desc" data-lang="skill_design_desc">Figma, интерфейсы, пользовательский опыт 📈</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="goals" class="section">
+      <div class="card">
+        <h3><span class="icon">🎯</span> <span data-lang="goals_title">Мои цели</span></h3>
+        <div class="goals-grid">
+          <div class="goal-card">
+            <span class="goal-icon">🌐</span>
+            <h4 data-lang="goal1_title">Разработка сайтов</h4>
+            <p data-lang="goal1_desc">Создание красивых и функциональных сайтов с возможностью продажи проектов клиентам</p>
+          </div>
+          <div class="goal-card">
+            <span class="goal-icon">💻</span>
+            <h4 data-lang="goal2_title">Программирование</h4>
+            <p data-lang="goal2_desc">Изучение языков: Java, JavaScript, HTML, Python и других основных технологий</p>
+          </div>
+          <div class="goal-card">
+            <span class="goal-icon">🎨</span>
+            <h4 data-lang="goal3_title">Дизайн</h4>
+            <p data-lang="goal3_desc">Обучение в сфере дизайна: UI/UX, графический дизайн, создание уникальных интерфейсов</p>
+          </div>
+        </div>
+
+        <div class="achievement">
+          <div class="emoji"></div>
+          <div class="title" data-lang="achievement_title">Первая четвёрка по алгебре!</div>
+          <div class="desc" data-lang="achievement_desc">Первая за все четверти! Ахахахах 😄</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="game" class="section">
+      <div class="game-container">
+        <h3>🐍 SNAKE</h3>
+
+        <div class="game-style-selector">
+          <button class="style-btn active" onclick="setGameStyle('modern', this)" data-lang="style_modern">⚡ MODERN</button>
+          <button class="style-btn" onclick="setGameStyle('nokia', this)" data-lang="style_nokia">📱 NOKIA</button>
+          <button class="style-btn" onclick="setGameStyle('cyber', this)" data-lang="style_cyber">🔮 CYBER</button>
+        </div>
+
+        <div class="game-style-selector">
+          <button class="style-btn speed-btn" onclick="setSpeed(200, this)" data-lang="speed_easy">🐢 Easy</button>
+          <button class="style-btn speed-btn active" onclick="setSpeed(150, this)" data-lang="speed_normal">⚡ Normal</button>
+          <button class="style-btn speed-btn" onclick="setSpeed(100, this)" data-lang="speed_hard">🔥 Hard</button>
+          <button class="style-btn speed-btn" onclick="setSpeed(70, this)" data-lang="speed_extreme">💀 Extreme</button>
+        </div>
+
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+        <div class="game-info">
+          <div><span data-lang="score_label">СЧЁТ:</span> <span id="score">0</span></div>
+          <div><span data-lang="highscore_label">РЕКОРД:</span> <span id="highScore">0</span></div>
+        </div>
+
+        <div class="game-controls">
+          <button class="game-btn" onclick="startGame()" data-lang="btn_start">▶ СТАРТ</button>
+          <button class="game-btn secondary" onclick="pauseGame()" data-lang="btn_pause">⏸ ПАУЗА</button>
+          <button class="game-btn secondary" onclick="resetGame()" data-lang="btn_reset">🔄 СБРОС</button>
+        </div>
+
+        <div class="game-mobile-controls">
+          <div class="ctrl-row">
+            <div></div>
+            <button class="ctrl-btn" ontouchstart="mobileDir(0,-1)" onclick="mobileDir(0,-1)">▲</button>
+            <div></div>
+          </div>
+          <div class="ctrl-row">
+            <button class="ctrl-btn" ontouchstart="mobileDir(-1,0)" onclick="mobileDir(-1,0)">◀</button>
+            <button class="ctrl-btn" onclick="resetGame()">●</button>
+            <button class="ctrl-btn" ontouchstart="mobileDir(1,0)" onclick="mobileDir(1,0)">▶</button>
+          </div>
+          <div class="ctrl-row">
+            <div></div>
+            <button class="ctrl-btn" ontouchstart="mobileDir(0,1)" onclick="mobileDir(0,1)">▼</button>
+            <div></div>
+          </div>
+        </div>
+
+        <p style="color: var(--muted); margin-top: 1.5rem; font-size: 0.9rem;" data-lang="game_controls">
+          Управление: стрелки ↑↓←→ или WASD
+        </p>
+      </div>
+    </section>
+
+    <section id="contact" class="section">
+      <div class="card">
+        <h3><span class="icon">📬</span> <span data-lang="contact_title">Контакты</span></h3>
+        <p style="margin-bottom: 1.5rem; color: var(--muted); font-size: 1.1rem;" data-lang="contact_text">
+          Открыт к интересным проектам и коллаборациям
+        </p>
+
+        <a href="https://t.me/LOST_WINGED_FROST" class="contact-btn" target="_blank">
+          ️ Telegram: @LOST_WINGED_FROST
+        </a>
+
+        <a href="https://jbhub-2025.pages.dev/" class="contact-btn gold" target="_blank">
+          🌐 JB Hub — Мой сайт
+        </a>
+
+        <div class="info-box">
+          <span>💡</span>
+          <span><strong data-lang="important">Важно:</strong> <span data-lang="tg_access">Доступ к моему ТГ-каналу с обновлениями — через сайт выше</span></span>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <p><span class="brand">© 2026 WINGED</span> • <span data-lang="footer_name">Андрей, 13 лет</span> • 🇵🇲</p>
+      <p style="margin-top: 0.5rem; font-size: 0.8rem;">jbhub-2025.pages.dev</p>
+    </footer>
+  </div>
+
+  <script>
+    // ==========================================
+    // ЖИВОЙ ФОН — КВАЗАР + СЕТКА + ЧАСТИЦЫ
+    // ==========================================
+    const bgCanvas = document.getElementById('bgCanvas');
+    const bgCtx = bgCanvas.getContext('2d');
+
+    function resizeBg() {
+      bgCanvas.width = window.innerWidth;
+      bgCanvas.height = window.innerHeight;
+    }
+    resizeBg();
+    window.addEventListener('resize', resizeBg);
+
+    let mouse = { x: -1000, y: -1000 };
+    document.addEventListener('mousemove', e => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    });
+
+    const particles = [];
+    for (let i = 0; i < 80; i++) {
+      particles.push({
+        x: Math.random() * bgCanvas.width,
+        y: Math.random() * bgCanvas.height,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        size: Math.random() * 2 + 0.5,
+        opacity: Math.random() * 0.5 + 0.1,
+        hue: Math.random() > 0.5 ? 260 : 50
+      });
+    }
+
+    const quasarParticles = [];
+    for (let i = 0; i < 60; i++) {
+      quasarParticles.push({
+        angle: Math.random() * Math.PI * 2,
+        radius: 20 + Math.random() * 100,
+        speed: 0.005 + Math.random() * 0.015,
+        size: 1 + Math.random() * 3,
+        opacity: 0.3 + Math.random() * 0.7,
+        hue: Math.random() > 0.3 ? 45 : 260
+      });
+    }
+
+    const jets = [];
+    for (let i = 0; i < 30; i++) {
+      jets.push({
+        x: 0,
+        y: (Math.random() - 0.5) * 500,
+        size: 1 + Math.random() * 2,
+        speed: 1 + Math.random() * 3,
+        opacity: Math.random() * 0.6,
+        direction: i < 15 ? -1 : 1,
+        drift: (Math.random() - 0.5) * 2
+      });
+    }
+
+    let quasarRotation = 0;
+    let gridOffset = 0;
+
+    function drawQuasar(cx, cy) {
+      const time = Date.now() * 0.001;
+      const pulse = Math.sin(time * 2) * 0.2 + 1;
+
+      const coreGlow = bgCtx.createRadialGradient(cx, cy, 0, cx, cy, 80 * pulse);
+      coreGlow.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+      coreGlow.addColorStop(0.1, 'rgba(255, 220, 100, 0.7)');
+      coreGlow.addColorStop(0.3, 'rgba(124, 92, 255, 0.3)');
+      coreGlow.addColorStop(0.6, 'rgba(255, 215, 0, 0.1)');
+      coreGlow.addColorStop(1, 'rgba(255, 215, 0, 0)');
+      bgCtx.fillStyle = coreGlow;
+      bgCtx.beginPath();
+      bgCtx.arc(cx, cy, 80 * pulse, 0, Math.PI * 2);
+      bgCtx.fill();
+
+      const outerGlow = bgCtx.createRadialGradient(cx, cy, 0, cx, cy, 200);
+      outerGlow.addColorStop(0, 'rgba(124, 92, 255, 0.15)');
+      outerGlow.addColorStop(0.5, 'rgba(255, 215, 0, 0.05)');
+      outerGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      bgCtx.fillStyle = outerGlow;
+      bgCtx.beginPath();
+      bgCtx.arc(cx, cy, 200, 0, Math.PI * 2);
+      bgCtx.fill();
+
+      bgCtx.save();
+      bgCtx.translate(cx, cy);
+      bgCtx.scale(1, 0.25);
+      bgCtx.rotate(quasarRotation);
+
+      for (let ring = 0; ring < 3; ring++) {
+        const r = 30 + ring * 30;
+        bgCtx.beginPath();
+        bgCtx.arc(0, 0, r, 0, Math.PI * 2);
+        bgCtx.strokeStyle = `rgba(255, 215, 0, ${0.15 - ring * 0.04})`;
+        bgCtx.lineWidth = 3 - ring;
+        bgCtx.stroke();
+      }
+
+      quasarParticles.forEach(p => {
+        p.angle += p.speed;
+        const px = Math.cos(p.angle) * p.radius;
+        const py = Math.sin(p.angle) * p.radius;
+        const dist = Math.abs(Math.sin(p.angle));
+
+        bgCtx.beginPath();
+        bgCtx.arc(px, py, p.size, 0, Math.PI * 2);
+        bgCtx.fillStyle = p.hue === 45
+          ? `rgba(255, 215, 0, ${p.opacity * dist * 0.6})`
+          : `rgba(124, 92, 255, ${p.opacity * dist * 0.4})`;
+        bgCtx.fill();
+      });
+
+      bgCtx.restore();
+
+      jets.forEach(j => {
+        j.y += j.speed * j.direction;
+        j.x += j.drift;
+        if (Math.abs(j.y) > 300) {
+          j.y = 0;
+          j.x = (Math.random() - 0.5) * 10;
+          j.drift = (Math.random() - 0.5) * 2;
+        }
+        const jetAlpha = Math.max(0, j.opacity * (1 - Math.abs(j.y) / 300));
+        bgCtx.beginPath();
+        bgCtx.arc(cx + j.x, cy + j.y, j.size, 0, Math.PI * 2);
+        if (j.direction < 0) {
+          bgCtx.fillStyle = `rgba(0, 212, 255, ${jetAlpha})`;
+          bgCtx.shadowBlur = 10;
+          bgCtx.shadowColor = 'rgba(0, 212, 255, 0.5)';
+        } else {
+          bgCtx.fillStyle = `rgba(255, 0, 170, ${jetAlpha})`;
+          bgCtx.shadowBlur = 10;
+          bgCtx.shadowColor = 'rgba(255, 0, 170, 0.5)';
+        }
+        bgCtx.fill();
+        bgCtx.shadowBlur = 0;
+      });
+
+      bgCtx.beginPath();
+      bgCtx.arc(cx, cy, 8, 0, Math.PI * 2);
+      const coreColor = bgCtx.createRadialGradient(cx, cy, 0, cx, cy, 8);
+      coreColor.addColorStop(0, '#ffffff');
+      coreColor.addColorStop(1, '#ffd700');
+      bgCtx.fillStyle = coreColor;
+      bgCtx.shadowBlur = 30;
+      bgCtx.shadowColor = '#ffd700';
+      bgCtx.fill();
+      bgCtx.shadowBlur = 0;
+
+      quasarRotation += 0.003;
+    }
+
+    function animateBg() {
+      const w = bgCanvas.width;
+      const h = bgCanvas.height;
+      bgCtx.clearRect(0, 0, w, h);
+
+      drawQuasar(w / 2, h / 2);
+
+      const gridSize = 60;
+      bgCtx.strokeStyle = 'rgba(124, 92, 255, 0.06)';
+      bgCtx.lineWidth = 1;
+      gridOffset = (gridOffset + 0.1) % gridSize;
+
+      for (let x = 0; x <= w + gridSize; x += gridSize) {
+        bgCtx.beginPath();
+        for (let y = 0; y <= h; y += 5) {
+          const dx = x - mouse.x;
+          const dy = y - mouse.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          let offsetX = 0;
+          if (dist < 200 && dist > 0) {
+            const force = (1 - dist / 200) * 20;
+            offsetX = (dx / dist) * force * Math.sin(Date.now() * 0.002 + y * 0.01);
+          }
+          if (y === 0) bgCtx.moveTo(x + offsetX, y);
+          else bgCtx.lineTo(x + offsetX, y);
+        }
+        bgCtx.stroke();
+      }
+
+      for (let y = gridOffset; y <= h; y += gridSize) {
+        bgCtx.beginPath();
+        for (let x = 0; x <= w; x += 5) {
+          const dx = x - mouse.x;
+          const dy = y - mouse.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          let offsetY = 0;
+          if (dist < 200 && dist > 0) {
+            const force = (1 - dist / 200) * 20;
+            offsetY = (dy / dist) * force * Math.sin(Date.now() * 0.003 + x * 0.01);
+          }
+          if (x === 0) bgCtx.moveTo(x, y + offsetY);
+          else bgCtx.lineTo(x, y + offsetY);
+        }
+        bgCtx.stroke();
+      }
+
+      for (let x = 0; x <= w + gridSize; x += gridSize) {
+        for (let y = gridOffset; y <= h; y += gridSize) {
+          const dx = x - mouse.x;
+          const dy = y - mouse.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 200) {
+            bgCtx.beginPath();
+            bgCtx.arc(x, y, 2, 0, Math.PI * 2);
+            bgCtx.fillStyle = `rgba(255, 215, 0, ${(1 - dist / 200) * 0.5})`;
+            bgCtx.fill();
+          }
+        }
+      }
+
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0 || p.x > w) p.vx *= -1;
+        if (p.y < 0 || p.y > h) p.vy *= -1;
+
+        for (let j = i + 1; j < particles.length; j++) {
+          const q = particles[j];
+          const dx = p.x - q.x;
+          const dy = p.y - q.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 150) {
+            bgCtx.beginPath();
+            bgCtx.moveTo(p.x, p.y);
+            bgCtx.lineTo(q.x, q.y);
+            bgCtx.strokeStyle = `rgba(124, 92, 255, ${0.08 * (1 - dist / 150)})`;
+            bgCtx.lineWidth = 0.5;
+            bgCtx.stroke();
+          }
+        }
+
+        const mdx = p.x - mouse.x;
+        const mdy = p.y - mouse.y;
+        const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
+        if (mdist < 250) {
+          bgCtx.beginPath();
+          bgCtx.moveTo(p.x, p.y);
+          bgCtx.lineTo(mouse.x, mouse.y);
+          bgCtx.strokeStyle = `rgba(255, 215, 0, ${0.15 * (1 - mdist / 250)})`;
+          bgCtx.lineWidth = 0.8;
+          bgCtx.stroke();
+        }
+
+        bgCtx.beginPath();
+        bgCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        bgCtx.fillStyle = p.hue === 260
+          ? `rgba(124, 92, 255, ${p.opacity})`
+          : `rgba(255, 215, 0, ${p.opacity})`;
+        bgCtx.fill();
+      }
+
+      requestAnimationFrame(animateBg);
+    }
+    animateBg();
+
+    // ==========================================
+    // НАВИГАЦИЯ
+    // ==========================================
+    function showSection(id, btn) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      if (btn) btn.classList.add('active');
+    }
+
+    // ==========================================
+    // ЯЗЫКИ — ИСПРАВЛЕНО
+    // ==========================================
+    const translations = {
+      ru: {
+        nav_home: " Главная",
+        nav_about: " Обо мне",
+        nav_skills: "💪 Навыки",
+        nav_goals: " Цели",
+        nav_game: " Игра",
+        nav_contact: " Контакты",
+        subtitle: "AI Developer • Web Creator • Digital Designer",
+        welcome_title: "Добро пожаловать!",
+        welcome_text: "Меня зовут Андрей, мне 13 лет. Я из Приднестровья 🇲<br>Создаю крутые проекты с использованием ИИ и веб-технологий.<br>Добро пожаловать в моё портфолио!",
+        about_title: "Обо мне",
+        label_name: "Имя",
+        label_age: "Возраст",
+        label_location: "Локация",
+        label_school: "Школа",
+        label_study: "Учёба",
+        study_fun: "«Когда как» 😄",
+        skills_title: "Навыки",
+        skill_ai_desc: "Нейросети, автоматизация, ChatGPT API, ML",
+        skill_web_desc: "HTML/CSS/JS, адаптивные сайты, API",
+        skill_mobile_desc: "React Native, Flutter, кроссплатформа",
+        skill_design_desc: "Figma, интерфейсы, пользовательский опыт 📈",
+        goals_title: "Мои цели",
+        goal1_title: "Разработка сайтов",
+        goal1_desc: "Создание красивых и функциональных сайтов с возможностью продажи проектов клиентам",
+        goal2_title: "Программирование",
+        goal2_desc: "Изучение языков: Java, JavaScript, HTML, Python и других основных технологий",
+        goal3_title: "Дизайн",
+        goal3_desc: "Обучение в сфере дизайна: UI/UX, графический дизайн, создание уникальных интерфейсов",
+        achievement_title: "Первая четвёрка по алгебре!",
+        achievement_desc: "Первая за все четверти! Ахахахах 😄",
+        style_modern: "⚡ MODERN",
+        style_nokia: "📱 NOKIA",
+        style_cyber: " CYBER",
+        speed_easy: " Easy",
+        speed_normal: " Normal",
+        speed_hard: "🔥 Hard",
+        speed_extreme: "💀 Extreme",
+        score_label: "СЧЁТ:",
+        highscore_label: "РЕКОРД:",
+        btn_start: "▶ СТАРТ",
+        btn_pause: "⏸ ПАУЗА",
+        btn_reset: "🔄 СБРОС",
+        game_controls: "Управление: стрелки ↑↓←→ или WASD",
+        contact_title: "Контакты",
+        contact_text: "Открыт к интересным проектам и коллаборациям",
+        important: "Важно:",
+        tg_access: "Доступ к моему ТГ-каналу с обновлениями — через сайт выше",
+        footer_name: "Андрей, 13 лет"
+      },
+      en: {
+        nav_home: "🏠 Home",
+        nav_about: "👤 About",
+        nav_skills: "💪 Skills",
+        nav_goals: "🎯 Goals",
+        nav_game: "🎮 Game",
+        nav_contact: " Contact",
+        subtitle: "AI Developer • Web Creator • Digital Designer",
+        welcome_title: "Welcome!",
+        welcome_text: "My name is Andrey, I'm 13 years old. I'm from Transnistria 🇵🇲<br>I create cool projects using AI and web technologies.<br>Welcome to my portfolio!",
+        about_title: "About Me",
+        label_name: "Name",
+        label_age: "Age",
+        label_location: "Location",
+        label_school: "School",
+        label_study: "Study",
+        study_fun: "\"When I feel like it\" 😄",
+        skills_title: "Skills",
+        skill_ai_desc: "Neural networks, automation, ChatGPT API, ML",
+        skill_web_desc: "HTML/CSS/JS, responsive websites, API",
+        skill_mobile_desc: "React Native, Flutter, cross-platform",
+        skill_design_desc: "Figma, interfaces, user experience 📈",
+        goals_title: "My Goals",
+        goal1_title: "Web Development",
+        goal1_desc: "Creating beautiful and functional websites with the possibility of selling projects to clients",
+        goal2_title: "Programming",
+        goal2_desc: "Learning languages: Java, JavaScript, HTML, Python and other main technologies",
+        goal3_title: "Design",
+        goal3_desc: "Learning in design: UI/UX, graphic design, creating unique interfaces",
+        achievement_title: "First 4 in Algebra!",
+        achievement_desc: "First ever in all quarters! Hahahaha 😄",
+        style_modern: "⚡ MODERN",
+        style_nokia: "📱 NOKIA",
+        style_cyber: "🔮 CYBER",
+        speed_easy: "🐢 Easy",
+        speed_normal: "⚡ Normal",
+        speed_hard: "🔥 Hard",
+        speed_extreme: "💀 Extreme",
+        score_label: "SCORE:",
+        highscore_label: "BEST:",
+        btn_start: "▶ START",
+        btn_pause: "⏸ PAUSE",
+        btn_reset: "🔄 RESET",
+        game_controls: "Controls: Arrow keys ↑↓←→ or WASD",
+        contact_title: "Contact",
+        contact_text: "Open to interesting projects and collaborations",
+        important: "Important:",
+        tg_access: "Access to my TG channel with updates — via the website above",
+        footer_name: "Andrey, 13 years old"
+      }
+    };
+
+    let currentLang = 'ru';
+
+    function toggleLang() {
+      currentLang = currentLang === 'ru' ? 'en' : 'ru';
+      document.querySelectorAll('[data-lang]').forEach(el => {
+        const key = el.getAttribute('data-lang');
+        if (translations[currentLang][key]) {
+          el.innerHTML = translations[currentLang][key];
+        }
+      });
+      document.documentElement.lang = currentLang;
+    }
+
+    // ==========================================
+    // ТЕМА — ИСПРАВЛЕНО
+    // ==========================================
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+    }
+
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+
+    // ==========================================
+    // ИГРА ЗМЕЙКА
+    // ==========================================
+    const gameCanvas = document.getElementById('gameCanvas');
+    const gCtx = gameCanvas.getContext('2d');
+
+    const GRID = 20;
+    const TILE = gameCanvas.width / GRID;
+
+    let snakeArr = [{x: 10, y: 10}];
+    let foodPos = {x: 15, y: 15};
+    let dirX = 0, dirY = 0;
+    let nextDirX = 0, nextDirY = 0;
+    let gameScore = 0;
+    let bestScore = parseInt(localStorage.getItem('snakeBest') || '0');
+    let gameInterval = null;
+    let isRunning = false;
+    let isPaused = false;
+    let snakeStyle = 'modern';
+    let gameSpeed = 150;
+
+    document.getElementById('highScore').textContent = bestScore;
+
+    if (!CanvasRenderingContext2D.prototype.roundRect) {
+      CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+        if (typeof r === 'number') r = [r, r, r, r];
+        this.moveTo(x + r[0], y);
+        this.lineTo(x + w - r[1], y);
+        this.quadraticCurveTo(x + w, y, x + w, y + r[1]);
+        this.lineTo(x + w, y + h - r[2]);
+        this.quadraticCurveTo(x + w, y + h, x + w - r[2], y + h);
+        this.lineTo(x + r[3], y + h);
+        this.quadraticCurveTo(x, y + h, x, y + h - r[3]);
+        this.lineTo(x, y + r[0]);
+        this.quadraticCurveTo(x, y, x + r[0], y);
+        this.closePath();
+      };
+    }
+
+    function setGameStyle(style, btn) {
+      snakeStyle = style;
+      document.querySelectorAll('#game .game-style-selector:nth-of-type(1) .style-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      drawGame();
+    }
+
+    function setSpeed(speed, btn) {
+      gameSpeed = speed;
+      document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      if (isRunning) {
+        clearInterval(gameInterval);
+        gameInterval = setInterval(updateGame, gameSpeed);
+      }
+    }
+
+    function drawGame() {
+      if (snakeStyle === 'modern') {
+        gCtx.fillStyle = '#0a0a0f';
+        gCtx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+        gCtx.strokeStyle = 'rgba(124, 92, 255, 0.05)';
+        gCtx.lineWidth = 1;
+        for (let i = 0; i <= gameCanvas.width; i += TILE) {
+          gCtx.beginPath(); gCtx.moveTo(i, 0); gCtx.lineTo(i, gameCanvas.height); gCtx.stroke();
+          gCtx.beginPath(); gCtx.moveTo(0, i); gCtx.lineTo(gameCanvas.width, i); gCtx.stroke();
+        }
+      } else if (snakeStyle === 'nokia') {
+        gCtx.fillStyle = '#9bbc0f';
+        gCtx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+        gCtx.strokeStyle = '#8bac0f';
+        for (let i = 0; i <= gameCanvas.width; i += TILE) {
+          gCtx.beginPath(); gCtx.moveTo(i, 0); gCtx.lineTo(i, gameCanvas.height); gCtx.stroke();
+          gCtx.beginPath(); gCtx.moveTo(0, i); gCtx.lineTo(gameCanvas.width, i); gCtx.stroke();
+        }
+      } else {
+        gCtx.fillStyle = '#0d0015';
+        gCtx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+        gCtx.strokeStyle = 'rgba(0, 212, 255, 0.15)';
+        for (let i = 0; i <= gameCanvas.width; i += TILE) {
+          gCtx.beginPath(); gCtx.moveTo(i, 0); gCtx.lineTo(i, gameCanvas.height); gCtx.stroke();
+          gCtx.beginPath(); gCtx.moveTo(0, i); gCtx.lineTo(gameCanvas.width, i); gCtx.stroke();
+        }
+      }
+
+      snakeArr.forEach((seg, idx) => {
+        const sx = seg.x * TILE;
+        const sy = seg.y * TILE;
+
+        if (snakeStyle === 'modern') {
+          const grad = gCtx.createLinearGradient(sx, sy, sx + TILE, sy + TILE);
+          if (idx === 0) {
+            grad.addColorStop(0, '#7c5cff');
+            grad.addColorStop(1, '#ffd700');
+            gCtx.shadowBlur = 15;
+            gCtx.shadowColor = '#7c5cff';
+          } else {
+            grad.addColorStop(0, '#5a3fc9');
+            grad.addColorStop(1, '#7c5cff');
+            gCtx.shadowBlur = 8;
+            gCtx.shadowColor = '#5a3fc9';
+          }
+          gCtx.fillStyle = grad;
+          gCtx.beginPath();
+          gCtx.roundRect(sx + 1, sy + 1, TILE - 2, TILE - 2, 4);
+          gCtx.fill();
+          gCtx.shadowBlur = 0;
+        } else if (snakeStyle === 'nokia') {
+          gCtx.fillStyle = '#0f380f';
+          gCtx.fillRect(sx + 2, sy + 2, TILE - 4, TILE - 4);
+          if (idx === 0) {
+            gCtx.fillStyle = '#306230';
+            gCtx.fillRect(sx + 5, sy + 5, 3, 3);
+            gCtx.fillRect(sx + 12, sy + 5, 3, 3);
+          }
+        } else {
+          if (idx === 0) {
+            gCtx.fillStyle = '#00d4ff';
+            gCtx.shadowBlur = 20;
+            gCtx.shadowColor = '#00d4ff';
+          } else {
+            gCtx.fillStyle = `rgba(0, 212, 255, ${1 - idx / snakeArr.length})`;
+            gCtx.shadowBlur = 10;
+            gCtx.shadowColor = '#00d4ff';
+          }
+          gCtx.beginPath();
+          gCtx.roundRect(sx + 1, sy + 1, TILE - 2, TILE - 2, 2);
+          gCtx.fill();
+          gCtx.shadowBlur = 0;
+        }
+      });
+
+      const fx = foodPos.x * TILE;
+      const fy = foodPos.y * TILE;
+
+      if (snakeStyle === 'modern') {
+        gCtx.fillStyle = '#ffd700';
+        gCtx.shadowBlur = 20;
+        gCtx.shadowColor = '#ffd700';
+        gCtx.beginPath();
+        gCtx.arc(fx + TILE / 2, fy + TILE / 2, TILE / 2 - 2, 0, Math.PI * 2);
+        gCtx.fill();
+        gCtx.shadowBlur = 0;
+      } else if (snakeStyle === 'nokia') {
+        gCtx.fillStyle = '#0f380f';
+        gCtx.fillRect(fx + 3, fy + 3, TILE - 6, TILE - 6);
+        gCtx.fillRect(fx + 5, fy + 1, 2, 2);
+        gCtx.fillRect(fx + 13, fy + 1, 2, 2);
+      } else {
+        gCtx.fillStyle = '#ff00aa';
+        gCtx.shadowBlur = 25;
+        gCtx.shadowColor = '#ff00aa';
+        gCtx.beginPath();
+        gCtx.moveTo(fx + TILE / 2, fy + 2);
+        gCtx.lineTo(fx + TILE - 2, fy + TILE / 2);
+        gCtx.lineTo(fx + TILE / 2, fy + TILE - 2);
+        gCtx.lineTo(fx + 2, fy + TILE / 2);
+        gCtx.closePath();
+        gCtx.fill();
+        gCtx.shadowBlur = 0;
+      }
+    }
+
+    function updateGame() {
+      if (!isRunning || isPaused) return;
+
+      dirX = nextDirX;
+      dirY = nextDirY;
+
+      const head = { x: snakeArr[0].x + dirX, y: snakeArr[0].y + dirY };
+
+      if (head.x < 0 || head.x >= GRID || head.y < 0 || head.y >= GRID) {
+        endGame(); return;
+      }
+
+      if (snakeArr.some(s => s.x === head.x && s.y === head.y)) {
+        endGame(); return;
+      }
+
+      snakeArr.unshift(head);
+
+      if (head.x === foodPos.x && head.y === foodPos.y) {
+        gameScore += 10;
+        document.getElementById('score').textContent = gameScore;
+        let pos;
+        do {
+          pos = {
+            x: Math.floor(Math.random() * GRID),
+            y: Math.floor(Math.random() * GRID)
+          };
+        } while (snakeArr.some(s => s.x === pos.x && s.y === pos.y));
+        foodPos = pos;
+      } else {
+        snakeArr.pop();
+      }
+
+      drawGame();
+    }
+
+    function startGame() {
+      if (!isRunning) {
+        isRunning = true;
+        isPaused = false;
+        nextDirX = 1;
+        nextDirY = 0;
+        clearInterval(gameInterval);
+        gameInterval = setInterval(updateGame, gameSpeed);
+      } else if (isPaused) {
+        isPaused = false;
+      }
+    }
+
+    function pauseGame() {
+      isPaused = !isPaused;
+    }
+
+    function resetGame() {
+      clearInterval(gameInterval);
+      isRunning = false;
+      isPaused = false;
+      snakeArr = [{x: 10, y: 10}];
+      foodPos = {x: 15, y: 15};
+      dirX = 0; dirY = 0;
+      nextDirX = 0; nextDirY = 0;
+      gameScore = 0;
+      document.getElementById('score').textContent = 0;
+      drawGame();
+    }
+
+    function endGame() {
+      clearInterval(gameInterval);
+      isRunning = false;
+      if (gameScore > bestScore) {
+        bestScore = gameScore;
+        localStorage.setItem('snakeBest', bestScore);
+        document.getElementById('highScore').textContent = bestScore;
+      }
+      gCtx.fillStyle = snakeStyle === 'nokia' ? 'rgba(15, 56, 15, 0.8)' : 'rgba(0,0,0,0.7)';
+      gCtx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+      gCtx.fillStyle = snakeStyle === 'nokia' ? '#0f380f' : '#ffd700';
+      gCtx.font = snakeStyle === 'nokia' ? '20px monospace' : '24px Orbitron, sans-serif';
+      gCtx.textAlign = 'center';
+      gCtx.fillText('GAME OVER', gameCanvas.width / 2, gameCanvas.height / 2 - 10);
+      gCtx.font = snakeStyle === 'nokia' ? '14px monospace' : '14px Orbitron, sans-serif';
+      gCtx.fillStyle = snakeStyle === 'nokia' ? '#306230' : '#e0e0ff';
+      gCtx.fillText('Score: ' + gameScore, gameCanvas.width / 2, gameCanvas.height / 2 + 25);
+    }
+
+    document.addEventListener('keydown', e => {
+      if (!isRunning && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault();
+        startGame();
+        return;
+      }
+      if (!isRunning || isPaused) return;
+
+      switch(e.key) {
+        case 'ArrowUp': case 'w': case 'W':
+          if (dirY === 0) { nextDirX = 0; nextDirY = -1; }
+          e.preventDefault(); break;
+        case 'ArrowDown': case 's': case 'S':
+          if (dirY === 0) { nextDirX = 0; nextDirY = 1; }
+          e.preventDefault(); break;
+        case 'ArrowLeft': case 'a': case 'A':
+          if (dirX === 0) { nextDirX = -1; nextDirY = 0; }
+          e.preventDefault(); break;
+        case 'ArrowRight': case 'd': case 'D':
+          if (dirX === 0) { nextDirX = 1; nextDirY = 0; }
+          e.preventDefault(); break;
+      }
+    });
+
+    function mobileDir(x, y) {
+      if (!isRunning || isPaused) return;
+      if (x === 0 && dirY === 0) { nextDirX = 0; nextDirY = y; }
+      if (y === 0 && dirX === 0) { nextDirX = x; nextDirY = 0; }
+    }
+
+    drawGame();
+  </script>
+</body>
+</html>
